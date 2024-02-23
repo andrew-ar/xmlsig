@@ -75,7 +75,8 @@ func pickSignatureAlgorithm(certType x509.PublicKeyAlgorithm, alg string) (*algo
 	case x509.ECDSA:
 		switch alg {
 		case "":
-			fallthrough
+			alg = "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1"
+			hash = crypto.SHA1
 		case "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1":
 			hash = crypto.SHA1
 		case "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha224":
