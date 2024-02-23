@@ -5,9 +5,11 @@ import (
 	"crypto"
 	"crypto/rand"
 	"errors"
+
 	// import supported crypto hash function
 	_ "crypto/sha1"
 	_ "crypto/sha256"
+	_ "crypto/sha512"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
@@ -47,10 +49,16 @@ func pickSignatureAlgorithm(certType x509.PublicKeyAlgorithm, alg string) (*algo
 			hash = crypto.SHA1
 		case "http://www.w3.org/2000/09/xmldsig#rsa-sha1":
 			hash = crypto.SHA1
+		case "http://www.w3.org/2001/04/xmldsig-more#rsa-sha224":
+			hash = crypto.SHA224
 		case "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256":
 			hash = crypto.SHA256
+		case "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384":
+			hash = crypto.SHA384
+		case "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512":
+			hash = crypto.SHA512
 		default:
-			return nil, errors.New("xmlsig does not currently the specfied algorithm for RSA certificates")
+			return nil, errors.New("xmlsig does not currently support the specfied algorithm for RSA certificates")
 		}
 	case x509.DSA:
 		switch alg {
@@ -62,10 +70,25 @@ func pickSignatureAlgorithm(certType x509.PublicKeyAlgorithm, alg string) (*algo
 		case "http://www.w3.org/2009/xmldsig11#dsa-sha256":
 			hash = crypto.SHA256
 		default:
-			return nil, errors.New("xmlsig does not currently the specfied algorithm for DSA certificates")
+			return nil, errors.New("xmlsig does not currently support the specfied algorithm for DSA certificates")
 		}
 	case x509.ECDSA:
-		return nil, errors.New("xmlsig does not currently support ECDSA certificates")
+		switch alg {
+		case "":
+			fallthrough
+		case "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1":
+			hash = crypto.SHA1
+		case "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha224":
+			hash = crypto.SHA224
+		case "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256":
+			hash = crypto.SHA256
+		case "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384":
+			hash = crypto.SHA384
+		case "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512":
+			hash = crypto.SHA512
+		default:
+			return nil, errors.New("xmlsig does not currently support the specfied algorithm for RSA certificates")
+		}
 	default:
 		return nil, errors.New("xmlsig needs some work to support your certificate")
 	}
@@ -80,6 +103,10 @@ func pickDigestAlgorithm(alg string) (*algorithm, error) {
 		return &algorithm{"http://www.w3.org/2000/09/xmldsig#sha1", crypto.SHA1}, nil
 	case "http://www.w3.org/2001/04/xmlenc#sha256":
 		return &algorithm{"http://www.w3.org/2001/04/xmlenc#sha256", crypto.SHA256}, nil
+	case "http://www.w3.org/2001/04/xmldsig-more#sha384":
+		return &algorithm{"http://www.w3.org/2001/04/xmldsig-more#sha384", crypto.SHA384}, nil
+	case "http://www.w3.org/2001/04/xmlenc#sha512":
+		return &algorithm{"http://www.w3.org/2001/04/xmlenc#sha512", crypto.SHA512}, nil
 	}
 	return nil, errors.New("xmlsig does not support the specified digest algorithm")
 }
